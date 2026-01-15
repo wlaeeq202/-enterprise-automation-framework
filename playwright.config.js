@@ -2,8 +2,9 @@
 const { defineConfig, devices } = require('@playwright/test');
 
 module.exports = defineConfig({
-  // Run ALL tests inside /src (UI + API)
+  // Run tests in /src, but ignore Selenium folder
   testDir: './src',
+  testIgnore: ['**/selenium/**'],
 
   timeout: 30 * 1000,
   expect: {
