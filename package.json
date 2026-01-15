@@ -4,10 +4,11 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "playwright test",
-    "test:ui": "playwright test --project=chromium",
-    "test:headed": "playwright test --headed",
-    "report": "playwright show-report"
+  "test": "playwright test",
+  "test:ui": "playwright test src/ui",
+  "test:api": "playwright test src/api",
+  "test:headed": "playwright test --headed",
+  "report": "playwright show-report"
   },
   "keywords": [],
   "author": "",
