@@ -1,14 +1,28 @@
 const { test, expect } = require('@playwright/test');
+const LoginPage = require('../pages/LoginPage');
+const InventoryPage = require('../pages/InventoryPage');
+const env = require('../config/env');
 
-test.describe('SauceDemo Login', () => {
-  test('Valid user should log in successfully', async ({ page }) => {
-    await page.goto('https://www.saucedemo.com/');
+test('Valid user can login and see products', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  const inventoryPage = new InventoryPage(page);
 
-    await page.fill('#user-name', 'standard_user');
-    await page.fill('#password', 'secret_sauce');
-    await page.click('#login-button');
+  await loginPage.open();
+  await loginPage.login(env.users.valid.username, env.users.valid.password);
 
-    await expect(page).toHaveURL(/inventory/);
-    await expect(page.getByText('Products')).toBeVisible();
-  });
+  expect(await inventoryPage.isLoaded()).toBeTruthy();
+
+  const names = await inventoryPage.getAllProductNames();
+  expect(names.length).toBeGreaterThan(0);
+});
+
+test('User can add item to cart', async ({ page }) => {
+  const loginPage = new LoginPage(page);
+  const inventoryPage = new InventoryPage(page);
+
+  await loginPage.open();
+  await loginPage.login(env.users.valid.username, env.users.valid.password);
+
+  await inventoryPage.addProductToCartByName('Sauce Labs Backpack');
+  expect(await inventoryPage.getCartCount()).toBe(1);
 });

@@ -1,6 +1,6 @@
 const { test, expect } = require('@playwright/test');
 
-test.describe('ReqRes Users API', () => {
+test.describe('User Service API (ReqRes demo)', () => {
   const baseUrl = 'https://reqres.in/api';
 
   // Helper to allow 2xx and handle 403 gracefully
