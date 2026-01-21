@@ -55,6 +55,19 @@ This framework is designed to be **technology-agnostic on the backend**, but the
 
 See [`docs/test-strategy-cost-app.md`](docs/test-strategy-cost-app.md) for a concrete test strategy for an Angular + C# + SQL + Snowflake application.
 
+---
+
+## 🧩 Enterprise Data Simulation (C# • SQL • Snowflake-style)
+
+To better align with roles that use **C# + SQL + Snowflake**, this repository includes a small, self-contained **enterprise data simulation** under:
+
+```text
+enterprise-data-simulation/
+ ├─ csharp-api/      # C# minimal API simulating a COST microservice
+ ├─ database/        # SQL schema + seed script for Costs table
+ └─ snowflake/       # Snowflake-style aggregation + validation script
+
+
 
 ## 📁 Project Structure
 
