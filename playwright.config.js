@@ -1,6 +1,8 @@
 // playwright.config.js
 const { defineConfig, devices } = require('@playwright/test');
 
+const isCI = !!process.env.CI;
+
 module.exports = defineConfig({
   testDir: './src',
   testIgnore: ['**/selenium/**'],
@@ -16,23 +18,18 @@ module.exports = defineConfig({
   ],
 
   use: {
+    // ✅ CI should be headless
+    headless: isCI,
+
     trace: 'on-first-retry',
     video: 'retain-on-failure',
     screenshot: 'only-on-failure',
-
-    //  Add these two lines for local visual runs
-    headless: false,
-    launchOptions: {
-      slowMo: 300,
-    },
   },
 
   projects: [
     {
       name: 'chromium',
-      use: {
-        ...devices['Desktop Chrome'],
-      },
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
 });
