@@ -1,8 +1,16 @@
 // ------------------------------------------------------------
-// PURPOSE:
+//“This is a .NET CRUD API. I use a public in-memory repository 
+// class to load seed data into RAM when the application starts, 
+// and I expose CRUD endpoints over HTTP.
+//  Then I use Playwright to call those APIs and validate the CRUD behavior.”
+
+//                                  PURPOSE:
 // Playwright API tests for the COST service.
 // These tests validate CRUD behavior against a local
 // C# Minimal API backend (in-memory repository).
+//************Under the C# API project (enterprise-data-simulation/csharp-api) 
+//  Inside Program.cs==>Class is declared and that class initilizs list cost sample data
+ 
 //
 // NOTE:
 // The test suite is skipped so CI/CD does not depend on
@@ -27,6 +35,10 @@ const BASE_URL =
 
 // Entire suite is skipped intentionally
 // This prevents CI failures if the local C# API is not running
+
+//* To Run Locally get in to this dir \enterprise-data-simulation\csharp-api> and run dot net 
+     // \enterprise-data-simulation\csharp-api> dotnet run
+     
 test.describe.skip('COST Service API (local C# mock)', () => {
 
   // ----------------------------------------------------------
@@ -35,6 +47,7 @@ test.describe.skip('COST Service API (local C# mock)', () => {
   test('GET /api/costs returns a list of costs', async ({ request }) => {
     // Send GET request to retrieve all cost records
     const response = await request.get(BASE_URL);
+    
 
     // Validate HTTP success
     expect(response.ok()).toBeTruthy();

@@ -1,5 +1,11 @@
 // ------------------------------------------------------------
-// PURPOSE:
+// This is a Playwright API automation suite against ReqRes, 
+// a public demo API. It covers GET/POST/PATCH/DELETE and validates
+//  status codes and response bodies. I added a helper to allow 403 
+// so the tests remain CI-safe in restricted networks,
+//  while still fully validating the contract when reachable
+
+// ************************PURPOSE:
 // Playwright API tests against ReqRes (public demo API).
 // Used to demonstrate API automation skills without relying
 // on an internal or local backend.

@@ -5,7 +5,7 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
-  workflow_dispatch:  # allows manual "Run workflow" from GitHub UI
+  workflow_dispatch:
 
 jobs:
   tests:
@@ -23,12 +23,53 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # Install Playwright browsers on the CI machine
       - name: Install Playwright browsers
         run: npx playwright install --with-deps
 
-      - name: Run Playwright tests (UI + API)
+      # ✅ Setup .NET (so we can run the C# API during the test job)
+      - name: Setup .NET 8 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+
+      # ✅ Build the C# API
+      - name: Build C# COST API
+        working-directory: enterprise-data-simulation/csharp-api
+        run: |
+          dotnet restore
+          dotnet build --configuration Release --no-restore
+
+      # ✅ Start the C# API in the background on localhost:5050
+      - name: Start C# COST API (background)
+        working-directory: enterprise-data-simulation/csharp-api
+        run: |
+          nohup dotnet run --urls "http://localhost:5050" > csharp-api.log 2>&1 &
+          echo "Started C# API in background"
+
+      # ✅ Wait until the API is up (health check)
+      - name: Wait for COST API to be ready
+        run: |
+          for i in {1..30}; do
+            if curl -sSf http://localhost:5050/api/costs > /dev/null; then
+              echo "COST API is ready"
+              exit 0
+            fi
+            echo "Waiting for COST API..."
+            sleep 1
+          done
+          echo "COST API did not start in time"
+          exit 1
+
+      # ✅ Run Playwright tests (UI + ReqRes API + COST API tests)
+      - name: Run Playwright tests (UI + API + COST)
+        env:
+          RUN_COST_API_TESTS: "1"
+          LOCAL_COST_API_URL: "http://localhost:5050/api/costs"
         run: npm test
+
+      # (Optional) ✅ Run your Snowflake-like data validation script too
+      - name: Validate Snowflake-like transformation (optional)
+        run: node enterprise-data-simulation/snowflake/validateTransformation.js
 
       - name: Upload Playwright HTML report
         if: always()
@@ -37,23 +78,10 @@ jobs:
           name: playwright-report
           path: playwright-report
 
-  csharp-api-build:
-    runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: enterprise-data-simulation/csharp-api
-
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Setup .NET 8 SDK
-        uses: actions/setup-dotnet@v4
+      # ✅ Upload C# API logs (very helpful if CI fails)
+      - name: Upload C# API logs
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          dotnet-version: '8.0.x'
-
-      - name: Restore C# dependencies
-        run: dotnet restore
-
-      - name: Build C# COST API
-        run: dotnet build --configuration Release --no-restore
+          name: csharp-api-log
+          path: enterprise-data-simulation/csharp-api/csharp-api.log
