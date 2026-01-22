@@ -1,3 +1,5 @@
+//To run locally npm run test:selenium
+
 const { Builder, By, Key, until } = require('selenium-webdriver');
 const assert = require('assert');
 

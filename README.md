@@ -9,88 +9,185 @@
 
 ## ⭐ Overview
 
-This repository contains a **full-stack automation framework** designed to demonstrate:
+This repository contains a **full-stack automation framework** designed to demonstrate real-world enterprise testing practices:
 
-- Modern **UI automation** using **Playwright**
-- **API testing** (GET / POST / PATCH / DELETE) using Playwright's `request` fixture
-- **Selenium WebDriver** example for classic UI testing
+- Modern **UI automation** using **Playwright + Page Object Model (POM)**
+- **API automation** (GET / POST / PATCH / DELETE)
+- **Selenium WebDriver** example for legacy UI automation
 - **Node.js + npm** project structure
-- **Continuous Integration** using **GitHub Actions**
+- **CI/CD automation** using **GitHub Actions**
+- **C# backend simulation** with **Snowflake-style data validation**
 
-It is intentionally structured like a real enterprise project so it can be used as a portfolio repo for interviews and technical discussions.
+The framework mirrors how automation is built, documented, and executed in large enterprise environments.
 
 ---
 
 ## 🧰 Tech Stack
 
-- **Language:** Node.js (JavaScript)
-- **UI Automation (modern):** [Playwright Test](https://playwright.dev/)
-- **UI Automation (classic):** [Selenium WebDriver](https://www.selenium.dev/)
-- **API Testing:** Playwright `request` fixture against a public API
-- **Test Runner / Reporter:** Playwright Test + HTML report
+- **Language:** JavaScript (Node.js)
+- **UI Automation (Modern):** Playwright Test
+- **UI Automation (Legacy):** Selenium WebDriver
+- **API Testing:** Playwright `request` fixture
+- **Backend Simulation:** C# (.NET 8 Minimal API)
+- **Data Validation:** Snowflake-style aggregation checks (JSON-based)
 - **CI/CD:** GitHub Actions
-- **Package Manager:** npm
-
----
+- **Reporting:** Playwright HTML Report
 
 ---
 
 ## 🎯 Alignment with Angular • C# • SQL • Snowflake Roles
 
-This framework is designed to be **technology-agnostic on the backend**, but the patterns map directly to an Angular + C# + SQL + Snowflake stack:
+This framework is backend-agnostic but maps directly to an enterprise stack:
 
-- **Angular Frontend:**  
-  UI automation is built with **Playwright + Page Object Model (POM)**.  
-  The same patterns (locators, components, POM, fixtures) apply to testing Angular components, routing, forms, guards, and API-driven UI.
+- **Angular Frontend**
+  - UI tests follow **Page Object Model**
+  - Same patterns apply to Angular components, routing, guards, forms, and API-driven UI
 
-- **C# Backend / APIs:**  
-  API tests use Playwright’s `request` fixture and validate REST endpoints, status codes, payloads, and error handling.  
-  In a real C# backend, these tests would point to the COST API endpoints and validate business rules, auth, and contracts.
+- **C# Backend**
+  - REST API validation (contracts, status codes, payloads)
+  - Local **C# Minimal API** simulates a real backend service
 
-- **SQL / Snowflake:**  
-  While this repo does not connect directly to Snowflake, the test strategy includes:
-  - validating API responses against database expectations  
-  - using query-style checks and data consistency assertions  
-  - treating Snowflake as a source of truth for reporting / analytics validation.
-
-See [`docs/test-strategy-cost-app.md`](docs/test-strategy-cost-app.md) for a concrete test strategy for an Angular + C# + SQL + Snowflake application.
+- **SQL / Snowflake**
+  - Data validation simulates Snowflake fact-table verification
+  - Raw data vs aggregated data consistency checks
 
 ---
 
 ## 🧩 Enterprise Data Simulation (C# • SQL • Snowflake-style)
 
-To better align with roles that use **C# + SQL + Snowflake**, this repository includes a small, self-contained **enterprise data simulation** under:
-
 ```text
 enterprise-data-simulation/
- ├─ csharp-api/      # C# minimal API simulating a COST microservice
- ├─ database/        # SQL schema + seed script for Costs table
- └─ snowflake/       # Snowflake-style aggregation + validation script
-
-
-
-## 📁 Project Structure
-
-```text
+ ├─ csharp-api/      # C# Minimal API simulating a COST microservice
+ ├─ database/        # SQL schema + seed data
+ └─ snowflake/       # Aggregation + validation logic
+┌──────────────────────────────────────────────────────────┐
+│                     GitHub Actions CI                     │
+│                    ubuntu-latest VM                       │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│  Environment Setup                                        │
+│  • Checkout repository                                   │
+│  • Install Node.js                                       │
+│  • Install Playwright browsers (headless)                 │
+│  • Install .NET 8 SDK                                     │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│  Backend Layer                                            │
+│  • dotnet restore & build                                 │
+│  • InMemoryCostRepository                                 │
+│  • API: http://localhost:5050/api/costs                   │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│  Playwright Test Runner                                   │
+│                                                          │
+│  UI Automation (POM)                                      │
+│  • LoginPage                                             │
+│  • InventoryPage                                        │
+│                                                          │
+│  API Automation                                           │
+│  • ReqRes Public API                                     │
+│  • Local C# COST API                                     │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│  Data Validation Layer                                    │
+│  • raw_costs.json                                        │
+│  • snowflake_fact_costs.json                              │
+│  • Aggregation comparison                                 │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│  CI Artifacts                                             │
+│  • Playwright HTML report                                 │
+│  • Screenshots / Videos / Traces                          │
+│  • Build logs                                             │
+└──────────────────────────────────────────────────────────┘
+┌──────────────────────────────────────────────────────────┐
+│                  LOCAL EXECUTION FLOW                    │
+│              Developer Machine (Local)                   │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│  Prerequisites                                           │
+│  • Node.js 18+ (Node 20 recommended)                      │
+│  • npm                                                   │
+│  • (Optional) .NET 8 SDK                                 │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│  Install Dependencies                                    │
+│  • npm ci                                                │
+│  • npx playwright install                                │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│  Playwright Test Execution                               │
+│                                                          │
+│  Run All Tests (Headless – CI parity)                    │
+│  • npm test                                              │
+│                                                          │
+│  Run UI Tests (Headed – Debug/Demo)                      │
+│  • npx playwright test src/ui --headed                   │
+│                                                          │
+│  Debug Mode (Inspector)                                  │
+│  • PWDEBUG=1 npx playwright test src/ui                  │
+│                                                          │
+│  Run API Tests Only                                      │
+│  • npx playwright test src/api                           │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│  Local C# COST API (Integration Testing)                 │
+│  • cd enterprise-data-simulation/csharp-api              │
+│  • dotnet run                                            │
+│  • In-memory repository                                  │
+│  • http://localhost:5050/api/costs                       │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│  Data Validation (Snowflake-style)                       │
+│  • raw_costs.json                                        │
+│  • snowflake_fact_costs.json                             │
+│  • node validateTransformation.js                        │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│  Reports & Utilities                                     │
+│  • Playwright HTML report: npm run report                │
+│  • Selenium example: npm run test:selenium               │
+└──────────────────────────────────────────────────────────┘
 enterprise-automation-framework
 ├─ src
 │  ├─ ui
 │  │  ├─ playwright
 │  │  │  ├─ tests
-│  │  │  │  └─ login.saucedemo.spec.js      # Playwright UI test (SauceDemo login)
-│  │  │  └─ pages                            # (reserved for Page Object Model)
+│  │  │  │  └─ login.saucedemo.spec.js
+│  │  │  └─ pages
 │  │  └─ selenium
 │  │     ├─ tests
-│  │     │  └─ google.search.test.js        # Selenium + Chrome example test
-│  │     └─ pages                            # (reserved for Selenium POM)
+│  │     │  └─ google.search.test.js
+│  │     └─ pages
 │  ├─ api
 │  │  └─ tests
-│  │     └─ user.api.spec.js                # Playwright API tests (GET/POST/PATCH/DELETE)
-│  └─ utils                                  # (reserved for helpers, config, etc.)
-├─ .github
-│  └─ workflows
-│     └─ ci.yml                              # GitHub Actions CI pipeline
-├─ playwright.config.js                      # Playwright configuration
+│  │     └─ user.api.spec.js
+│  ├─ utils
+├─ enterprise-data-simulation
+├─ .github/workflows/ci.yml
+├─ playwright.config.js
 ├─ package.json
 ├─ package-lock.json
 └─ README.md
