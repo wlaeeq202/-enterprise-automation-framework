@@ -1,8 +1,5 @@
 name: ETL Validate (Snowflake-style)
 
-# WHEN this workflow runs:
-# - On every pull request (protects merges)
-# - On every push to main (protects main branch)
 on:
   pull_request:
   push:
@@ -10,43 +7,89 @@ on:
 
 jobs:
   etl-validate:
-    name: Generate -> Transform -> Validate
+    name: Generate -> Transform -> Validate (+ runtime)
     runs-on: ubuntu-latest
 
     steps:
-      # Step 1: Pull down your repo code onto the GitHub runner VM
+      # Step 1: Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      # Step 2: Install Node (match your local environment)
+      # Step 2: Setup Node
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "20"
 
-      # Step 3: Install dependencies exactly as locked in package-lock.json
-      # npm ci is faster + deterministic for CI
+      # Step 3: Install deps deterministically
       - name: Install dependencies
         run: npm ci
 
-      # Step 4: Generate a representative dataset
-      # IMPORTANT: In real HealthMonix flows there are millions of rows,
-      # but CI should be fast. We validate correctness on 5k rows here.
-      - name: Generate raw data (simulated Excel upload)
-        run: npm run etl:generate
+      # Step 4-6: Run ETL end-to-end AND measure runtime (single pass)
+      - name: Run ETL + measure runtime
+        id: etl_runtime
+        shell: bash
         env:
+          # CI stays fast with representative rows
           ROWS: "5000"
+        run: |
+          set -e
 
-      # Step 5: Transform raw data into a Snowflake-style fact output
-      - name: Transform to fact table output
-        run: npm run etl:transform
+          START=$(date +%s)
 
-      # Step 6: Validate correctness (fail the build if mismatch)
-      - name: Validate transformation
-        run: npm run etl:validate
+          # Generate -> Transform -> Validate
+          npm run etl:generate
+          npm run etl:transform
+          npm run etl:validate
 
-      # Step 7: Upload output JSON files as artifacts
-      # Helpful when CI fails, so you can download and inspect quickly.
+          END=$(date +%s)
+          DURATION=$((END-START))
+
+          echo "duration=$DURATION" >> $GITHUB_OUTPUT
+          echo "ETL runtime: ${DURATION}s" >> $GITHUB_STEP_SUMMARY
+
+      # Step 7: Compare runtime to baseline (or a standard threshold)
+      - name: Compare runtime to baseline (or standard threshold)
+        shell: bash
+        run: |
+          set -e
+
+          DURATION="${{ steps.etl_runtime.outputs.duration }}"
+
+          # Defaults if baseline file is missing
+          BASELINE=15
+          MAX_PERCENT=30
+          HARD_CAP=60
+
+          BASELINE_FILE="enterprise-data-simulation/snowflake/perf/baseline.json"
+
+          if [ -f "$BASELINE_FILE" ]; then
+            # Parse baseline config using Node (already installed above)
+            BASELINE=$(node -p "require('./$BASELINE_FILE').etlRunSecondsBaseline")
+            MAX_PERCENT=$(node -p "require('./$BASELINE_FILE').maxAllowedRegressionPercent")
+            HARD_CAP=$(node -p "require('./$BASELINE_FILE').maxAllowedSecondsHardCap")
+          fi
+
+          # Allowed time = baseline * (1 + max_percent/100)
+          ALLOWED=$(node -p "Math.ceil($BASELINE * (1 + $MAX_PERCENT/100))")
+
+          echo "Baseline: ${BASELINE}s, Allowed: ${ALLOWED}s, Hard cap: ${HARD_CAP}s" >> $GITHUB_STEP_SUMMARY
+          echo "Actual: ${DURATION}s" >> $GITHUB_STEP_SUMMARY
+
+          # Fail if too slow
+          if [ "$DURATION" -gt "$HARD_CAP" ]; then
+            echo "❌ ETL runtime exceeded hard cap (${HARD_CAP}s)." >&2
+            exit 1
+          fi
+
+          if [ "$DURATION" -gt "$ALLOWED" ]; then
+            echo "❌ ETL runtime regression detected. Actual ${DURATION}s > Allowed ${ALLOWED}s." >&2
+            exit 1
+          fi
+
+          echo "✅ Runtime within expected range." >> $GITHUB_STEP_SUMMARY
+
+      # Step 8: Upload output JSON files as artifacts (for debugging)
       - name: Upload ETL artifacts
         if: always()
         uses: actions/upload-artifact@v4

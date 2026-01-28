@@ -1,0 +1,5 @@
+{
+  "etlRunSecondsBaseline": 10,
+  "maxAllowedRegressionPercent": 30,
+  "maxAllowedSecondsHardCap": 60
+}
