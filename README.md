@@ -1,152 +1,110 @@
-# Enterprise Automation Framework
-
-> Enterprise-grade **UI + API + Data Validation** automation framework using  
-> **Playwright**, **Selenium**, **Node.js**, and **GitHub Actions CI**.  
->  
-> Designed to demonstrate how modern SDETs validate **end-to-end systems**:  
-> **UI → API → Database (Snowflake-style ETL)** — safely and efficiently.
-
-![CI Status](https://github.com/wlaeeq202/-enterprise-automation-framework/actions/workflows/ci.yml/badge.svg)
-
----
-
-## ⭐ Overview
-
-This repository showcases a **real-world enterprise automation architecture** used in data-driven platforms.
-
-It demonstrates how an automation engineer:
-- Validates **UI, API, and backend data consistency**
-- Protects **data pipelines** from regressions
-- Keeps **CI pipelines fast** while ensuring correctness
-- Scales validation logic to large datasets (Snowflake-style ETL)
-
-The framework is intentionally modular and mirrors how automation is structured in large engineering organizations.
-
----
-
-## 🧰 Tech Stack
-
-- **Language:** JavaScript (Node.js)
-- **UI Automation (Modern):** Playwright (Page Object Model)
-- **UI Automation (Legacy):** Selenium WebDriver
-- **API Testing:** Playwright `request` fixture
-- **Backend Simulation:** C# (.NET 8 Minimal API)
-- **Data Validation:** Snowflake-style ETL aggregation checks
-- **CI/CD:** GitHub Actions
-- **Reporting:** Playwright HTML Report + CI artifacts
-
----
-
-## 🎯 Enterprise Alignment (Angular • C# • SQL • Snowflake)
-
-This framework is backend-agnostic but maps directly to common enterprise stacks.
-
-### Angular Frontend
-- Page Object Model mirrors Angular components
-- UI tests validate API-driven UI data
-- Ready for routing, guards, and form validation
-
-### C# Backend
-- Minimal API simulates a COST microservice
-- REST contract, payload, and integration testing
-- Mirrors real .NET service patterns
-
-### SQL / Snowflake
-- Raw transactional data vs aggregated fact tables
-- Deterministic ETL validation logic
-- CI-based regression protection for data pipelines
-
 ---
 
 ## 🧩 Enterprise Data Simulation (Snowflake-Style ETL)
 
-All data-processing logic lives under:
+This repository includes a **deterministic, CI-safe simulation of a Snowflake ETL pipeline**.
 
-### Folder Structure
-```text
-snowflake/
-├─ data/
-│  ├─ raw_costs.json              # Simulated Excel upload (generated in CI)
-│  └─ snowflake_fact_costs.json   # Aggregated fact-table output
-├─ scripts/
-│  ├─ generate_costs.js           # Generates deterministic raw data (5,000 rows)
-│  ├─ transform_costs.js          # GROUP BY + SUM (fact-table simulation)
-│  └─ validate_transformation.js  # Validates raw vs fact data correctness
-├─ transformationrules.md         # Business transformation rules
-└─ README.md
-```
+It demonstrates how an SDET validates **data correctness and performance**, not just UI or API responses.
+
+### 📁 Folder Structure
 
 ```text
-┌──────────────────────────────────────────────┐
-│  Raw Data Ingestion                          │
-│  • Simulates Excel file with 5,000 rows      │
-│  • Deterministic (seeded) data               │
-└──────────────────────────────────────────────┘
-                │
-                ▼
-┌──────────────────────────────────────────────┐
-│  Transformation Layer                        │
-│  • GROUP BY department                       │
-│  • SUM amount → totalAmount                  │
-│  • Mirrors Snowflake fact-table logic        │
-└──────────────────────────────────────────────┘
-                │
-                ▼
-┌──────────────────────────────────────────────┐
-│  Validation Layer                            │
-│  • Re-aggregate raw data independently       │
-│  • Compare expected vs transformed output    │
-│  • Fail CI on mismatch                       │
-└──────────────────────────────────────────────┘
-
+enterprise-data-simulation/
+└─ snowflake/
+   ├─ data/
+   │  ├─ raw_costs.json
+   │  └─ snowflake_fact_costs.json
+   ├─ scripts/
+   │  ├─ generate_costs.js
+   │  ├─ transform_costs.js
+   │  └─ validate_transformation.js
+   ├─ perf/
+   │  └─ baseline.json
+   └─ README.md
 ```
-## 🤖 GitHub Actions CI
-
-ETL validation runs automatically on every pull request and push to ensure
-data correctness without slowing down the pipeline.
 
 ```text
 .github/workflows/etl-validate.yml
 ```
+### 🔄 What the ETL Workflow Does
 
-## 🖥 UI Automation (Playwright)
+1. Generate representative raw data (5,000 rows)
+2. Transform raw → fact output (GROUP BY + SUM)
+3. Independently re-aggregate raw data
+4. Compare expected vs actual results
+5. Measure execution runtime
+6. Fail CI if:
+   - Data mismatches are detected
+   - Runtime regression exceeds allowed threshold
+
+---
+
+## ⏱ Runtime Regression Protection
+
+In addition to validating data correctness, the ETL pipeline also protects
+against **performance regressions**.
+
+### How Runtime Is Evaluated
+
+- ETL execution time is measured during CI
+- A historical baseline is used when available
+- Safe defaults are applied when no baseline exists
 
 ```text
-src/ui/playwright/
-├─ pages/        # Page Object Model
-└─ tests/        # UI tests
+enterprise-data-simulation/snowflake/perf/baseline.json
 ```
 
-## 🌐 API Automation
+### Why CI Uses 5,000 Rows (and Not Millions)
 
-```text
-src/api/tests/
+HealthMonix-style pipelines can process **millions of rows**, but CI must stay fast.
 
-```
+This repo intentionally uses **5,000 representative rows** in PR builds to:
+- Catch ETL logic regressions quickly (GROUP BY / SUM rules)
+- Keep pull request pipelines fast and reliable
+- Prevent deployments from slowing down due to validation suites
 
-## 🔁 Local Execution
+### How This Scales to Millions
 
-### Install Dependencies
+The same scripts work for larger datasets by changing an environment variable:
+
+- PR / CI: `ROWS=5000` (fast correctness + quick runtime signal)
+- Nightly / scheduled: `ROWS=100000+` (heavier performance validation)
+
+This is the same strategy enterprise teams use:
+**fast correctness checks per commit + scheduled performance gates**
+
+---
+
+## ▶️ Run ETL Locally
+
+### 1) Install dependencies
 ```bash
 npm ci
-npx playwright install
 ```
-### Run All Tests
 ```bash
-npm test
+npm run etl:generate
+npm run etl:transform
+npm run etl:validate
 ```
-### Run UI Tests (Debug / Headed)
 ```bash
-npx playwright test src/ui --headed
+ROWS=10000 npm run etl:generate
+npm run etl:transform
+npm run etl:validate
 ```
-### Run API Tests Only
+#### macOS / Linux
 ```bash
-npx playwright test src/api
+$env:ROWS="10000"
+npm run etl:generate
+npm run etl:transform
+npm run etl:validate
 ```
-### Run Snowflake-Style ETL Validation
-```bash
-node enterprise-data-simulation/snowflake/scripts/generate_costs.js
-node enterprise-data-simulation/snowflake/scripts/transform_costs.js
-node enterprise-data-simulation/snowflake/scripts/validate_transformation.js
+#### Windows
+```powershell
+$env:ROWS="10000"
+npm run etl:generate
+npm run etl:transform
+npm run etl:validate
+```
 
-```
+
+
