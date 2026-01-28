@@ -1,5 +1,3 @@
----
-
 ##  Enterprise Data Simulation (Snowflake-Style ETL)
 
 This repository includes a **deterministic, CI-safe simulation of a Snowflake ETL pipeline**.
