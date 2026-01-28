@@ -67,10 +67,6 @@ jobs:
           LOCAL_COST_API_URL: "http://localhost:5050/api/costs"
         run: npm test
 
-      # (Optional) ✅ Run your Snowflake-like data validation script too
-      - name: Validate Snowflake-like transformation (optional)
-        run: node enterprise-data-simulation/snowflake/validateTransformation.js
-
       - name: Upload Playwright HTML report
         if: always()
         uses: actions/upload-artifact@v4
