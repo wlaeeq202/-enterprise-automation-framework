@@ -192,5 +192,42 @@ npm run etl:transform
 npm run etl:validate
 ```
 
+---
 
+## ▶️ Run UI + API Locally (Playwright)
+
+### 1) Install dependencies
+```bash
+npm ci
+npx playwright install
+```
+```bash
+npm test
+```
+```bash
+npx playwright test src/ui
+```
+```bash
+npx playwright test src/api/tests
+```
+```bash
+npx playwright test src/ui --headed
+```
+```bash
+npx playwright show-report
+```
+## ▶️ Run Legacy UI (Selenium)
+
+### Run Selenium example tests
+```bash
+npm run test:selenium
+```
+
+## ▶️ Run Local C# COST API (Optional Integration)
+
+```bash
+cd enterprise-data-simulation/csharp-api
+dotnet restore
+dotnet run
+```
 
