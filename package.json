@@ -9,6 +9,10 @@
     "test:api": "playwright test src/api",
     "test:headed": "playwright test --headed",
     "test:selenium": "node src/ui/selenium/tests/google.search.test.js",
+    "etl:generate": "node enterprise-data-simulation/snowflake/scripts/generate_costs.js",
+    "etl:transform": "node enterprise-data-simulation/snowflake/scripts/transform_costs.js",
+    "etl:validate": "node enterprise-data-simulation/snowflake/scripts/validate_transformation.js",
+    "etl:run": "npm run etl:generate && npm run etl:transform && npm run etl:validate",
     "report": "playwright show-report"
   },
   "keywords": [],

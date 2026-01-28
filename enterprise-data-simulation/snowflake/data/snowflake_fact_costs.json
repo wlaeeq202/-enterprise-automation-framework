@@ -1,0 +1,22 @@
+[
+  {
+    "department": "HR",
+    "totalAmount": 2344346
+  },
+  {
+    "department": "Finance",
+    "totalAmount": 2485011
+  },
+  {
+    "department": "Sales",
+    "totalAmount": 2663077
+  },
+  {
+    "department": "Operations",
+    "totalAmount": 2503846
+  },
+  {
+    "department": "IT",
+    "totalAmount": 2496790
+  }
+]

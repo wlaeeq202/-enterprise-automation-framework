@@ -1,0 +1,55 @@
+name: ETL Validate (Snowflake-style)
+
+# WHEN this workflow runs:
+# - On every pull request (protects merges)
+# - On every push to main (protects main branch)
+on:
+  pull_request:
+  push:
+    branches: [ main ]
+
+jobs:
+  etl-validate:
+    name: Generate -> Transform -> Validate
+    runs-on: ubuntu-latest
+
+    steps:
+      # Step 1: Pull down your repo code onto the GitHub runner VM
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # Step 2: Install Node (match your local environment)
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      # Step 3: Install dependencies exactly as locked in package-lock.json
+      # npm ci is faster + deterministic for CI
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Generate a representative dataset
+      # IMPORTANT: In real HealthMonix flows there are millions of rows,
+      # but CI should be fast. We validate correctness on 5k rows here.
+      - name: Generate raw data (simulated Excel upload)
+        run: npm run etl:generate
+        env:
+          ROWS: "5000"
+
+      # Step 5: Transform raw data into a Snowflake-style fact output
+      - name: Transform to fact table output
+        run: npm run etl:transform
+
+      # Step 6: Validate correctness (fail the build if mismatch)
+      - name: Validate transformation
+        run: npm run etl:validate
+
+      # Step 7: Upload output JSON files as artifacts
+      # Helpful when CI fails, so you can download and inspect quickly.
+      - name: Upload ETL artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: etl-output
+          path: enterprise-data-simulation/snowflake/data/*.json
