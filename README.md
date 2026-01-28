@@ -1,12 +1,12 @@
 ---
 
-## 🧩 Enterprise Data Simulation (Snowflake-Style ETL)
+##  Enterprise Data Simulation (Snowflake-Style ETL)
 
 This repository includes a **deterministic, CI-safe simulation of a Snowflake ETL pipeline**.
 
 It demonstrates how an SDET validates **data correctness and performance**, not just UI or API responses.
 
-### 📁 Folder Structure
+###  Folder Structure
 
 ```text
 enterprise-data-simulation/
@@ -26,7 +26,7 @@ enterprise-data-simulation/
 ```text
 .github/workflows/etl-validate.yml
 ```
-### 🔄 What the ETL Workflow Does
+###  What the ETL Workflow Does
 
 1. Generate representative raw data (5,000 rows)
 2. Transform raw → fact output (GROUP BY + SUM)
@@ -39,7 +39,7 @@ enterprise-data-simulation/
 
 ---
 
-## ⏱ Runtime Regression Protection
+##  Runtime Regression Protection
 
 In addition to validating data correctness, the ETL pipeline also protects
 against **performance regressions**.
@@ -75,7 +75,7 @@ This is the same strategy enterprise teams use:
 
 ---
 
-## ▶️ Run ETL Locally
+##  Run ETL Locally
 
 ### 1) Install dependencies
 ```bash
@@ -93,11 +93,11 @@ npm run etl:validate
 ```
 #### macOS / Linux
 ```bash
-$env:ROWS="10000"
-npm run etl:generate
+ROWS=10000 npm run etl:generate
 npm run etl:transform
 npm run etl:validate
 ```
+
 #### Windows
 ```powershell
 $env:ROWS="10000"
