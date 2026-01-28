@@ -9,6 +9,7 @@
  * - Prevent silent ETL regressions when code changes
  * - Keep CI fast by validating on representative data (5k rows)
  * - Fail the pipeline if totals are wrong (data correctness gate)
+ * - Emit runtime metrics (ms + seconds) for CI visibility
  *
  * INPUT:
  *  enterprise-data-simulation/snowflake/data/raw_costs.json
@@ -73,6 +74,7 @@ function validate(expected, actual) {
     const a = actual[i];
 
     // Strict equality check: same department + exact total
+    // If you ever switch to decimal amounts, consider epsilon comparison.
     if (e.department !== a.department || e.totalAmount !== a.totalAmount) {
       return {
         ok: false,
@@ -86,22 +88,39 @@ function validate(expected, actual) {
   return { ok: true };
 }
 
+/**
+ * Read JSON from a file with helpful errors.
+ */
+function readJsonOrExit(filePath, friendlyName) {
+  try {
+    const text = fs.readFileSync(filePath, "utf8");
+    return JSON.parse(text);
+  } catch (err) {
+    console.error(`❌ Failed to read/parse ${friendlyName}: ${filePath}`);
+    console.error(err?.message || err);
+    process.exit(1);
+  }
+}
+
 // Guardrails: ensure input files exist
 if (!fs.existsSync(rawPath)) {
   console.error(`❌ Missing raw file: ${rawPath}`);
-  console.error("Run generate_costs.js first.");
+  console.error("Run generate_costs.js first (npm run etl:generate).");
   process.exit(1);
 }
 
 if (!fs.existsSync(factPath)) {
   console.error(`❌ Missing fact file: ${factPath}`);
-  console.error("Run transform_costs.js first.");
+  console.error("Run transform_costs.js first (npm run etl:transform).");
   process.exit(1);
 }
 
+// ---- TIMING START (high precision) ----
+const start = process.hrtime.bigint();
+
 // Read data
-const raw = JSON.parse(fs.readFileSync(rawPath, "utf8"));
-const facts = JSON.parse(fs.readFileSync(factPath, "utf8"));
+const raw = readJsonOrExit(rawPath, "raw costs");
+const facts = readJsonOrExit(factPath, "fact costs");
 
 // Build expected independently
 const expected = aggregateRawByDepartment(raw);
@@ -109,12 +128,30 @@ const expected = aggregateRawByDepartment(raw);
 // Validate
 const result = validate(expected, facts);
 
+// ---- TIMING END ----
+const end = process.hrtime.bigint();
+const elapsedMs = Number(end - start) / 1_000_000;
+const elapsedSec = elapsedMs / 1000;
+
+// Emit runtime for CI visibility (0s issue solved)
+console.log(`⏱️ ETL validation runtime: ${elapsedMs.toFixed(2)} ms (${elapsedSec.toFixed(3)} s)`);
+
 if (result.ok) {
   console.log("✅ Validation PASSED: fact output matches raw aggregation.");
   process.exit(0);
 } else {
   console.error(`❌ Validation FAILED: ${result.reason}`);
-  console.error("Expected:", result.expected);
-  console.error("Actual:  ", result.actual);
+
+  // Print smaller, more readable diff hints first
+  const expectedKeys = expected.map((x) => x.department);
+  const actualKeys = facts.map((x) => x.department);
+
+  console.error("Expected departments:", expectedKeys);
+  console.error("Actual departments:  ", actualKeys);
+
+  // Full outputs for deep debugging (kept last)
+  console.error("Expected (full):", expected);
+  console.error("Actual (full):  ", facts);
+
   process.exit(1);
 }

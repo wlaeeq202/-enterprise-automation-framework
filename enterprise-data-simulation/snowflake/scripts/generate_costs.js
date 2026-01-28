@@ -5,7 +5,7 @@
  * Simulate a large Excel upload by generating deterministic raw
  * transactional cost records (e.g., 5,000 rows).
  *
- * WHY (HealthMonix-style):
+ * WHY (csv excel fetch style):
  * - Real world: Excel arrives with millions of rows
  * - We want CI to stay FAST, but still catch ETL regressions
  * - So we generate a representative dataset (5k rows) on every PR
