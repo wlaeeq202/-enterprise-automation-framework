@@ -1,8 +1,96 @@
-##  Enterprise Data Simulation (Snowflake-Style ETL)
+## 🧰 Tech Stack
+
+## 🗺️ Automation Architecture Overview (UI • API • ETL)
+
+## 🧩 Enterprise Data Simulation (Snowflake-Style ETL)
+
+This framework is split into **UI**, **API**, and **ETL/Data** layers to mirror real enterprise testing.
+
+### 📌 Responsibility Map (What runs where)
+
+```text
+┌──────────────────────────────────────────────────────────┐
+│                  Test Orchestrator                       │
+│          (Local Run or GitHub Actions CI)                 │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│ UI Automation Layer                                      │
+│ src/ui/                                                  │
+│ • Playwright UI tests (POM)                              │
+│ • User flows, navigation, regressions                    │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│ API Automation Layer                                     │
+│ src/api/tests/                                           │
+│ • REST API tests (GET/POST/PATCH/DELETE)                 │
+│ • Status codes, payloads, payload validation             │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│ ETL / Snowflake-Style Data Simulation                    │
+│ enterprise-data-simulation/snowflake/                    │
+│ • Raw data generation                                    │
+│ • Transform logic (fact outputs)                         │
+│ • Data reconciliation + quality checks                   │
+└──────────────────────────────────────────────────────────┘
+            │
+            ▼
+┌──────────────────────────────────────────────────────────┐
+│ Reports & CI Artifacts                                   │
+│ • Playwright HTML report                                 │
+│ • Logs, traces, screenshots                              │
+└──────────────────────────────────────────────────────────┘
+```
+### 🔁 Execution Flow (Visual)
+
+```mermaid
+flowchart TD
+  A[Developer / GitHub Actions] --> B[npm ci + Playwright install]
+  B --> C[Test Orchestration]
+
+  subgraph UI[UI Automation]
+    U1[src/ui] --> U2[Playwright Tests]
+    U2 --> U3[UI Assertions + Artifacts]
+  end
+
+  subgraph API[API Automation]
+    A1[src/api/tests] --> A2[src/api/clients]
+    A2 --> A3[REST Assertions]
+  end
+
+  subgraph ETL[ETL / Snowflake Simulation]
+    E1[snowflake/data/raw_costs.json]
+    E2[generate_costs.js]
+    E3[transform_costs.js]
+    E4[snowflake_fact_costs.json]
+    E5[validate_transformation.js]
+    E1 --> E2 --> E3 --> E4 --> E5
+  end
+
+  subgraph Backend[C# Backend Simulation]
+    D1[enterprise-data-simulation/csharp-api] --> A2
+  end
+
+  C --> U1
+  C --> A1
+  C --> E1
+
+  U3 --> R[Playwright Report + CI Artifacts]
+  A3 --> R
+  E5 --> R  
+```
+
+```md
 
 This repository includes a **deterministic, CI-safe simulation of a Snowflake ETL pipeline**.
 
 It demonstrates how an SDET validates **data correctness and performance**, not just UI or API responses.
+```
 
 ###  Folder Structure
 
