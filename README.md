@@ -205,16 +205,16 @@ npx playwright install
 npm test
 ```
 ```bash
-npx playwright test src/ui
+npm run test:ui
 ```
 ```bash
-npx playwright test src/api/tests
+npm run test:api
 ```
 ```bash
-npx playwright test src/ui --headed
+npm run test:headed
 ```
 ```bash
-npx playwright show-report
+npm run report
 ```
 ## ▶️ Run Legacy UI (Selenium)
 
@@ -229,5 +229,9 @@ npm run test:selenium
 cd enterprise-data-simulation/csharp-api
 dotnet restore
 dotnet run
+```
+### Run full ETL pipeline (generate → transform → validate)
+```bash
+npm run etl:run
 ```
 
